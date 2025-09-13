@@ -1,11 +1,15 @@
 from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtCore import Qt
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar, FigureCanvasQTAgg as MplCanvas
+from plotly.graph_objs import Figure
+
+from new_delhi_weather.new_delhi_weather_canvas import NewDelhiWeatherCanvas
 
 
 class NewDelhiWeather(QWidget):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
+
+        self._canvas = None
 
         self.setWindowTitle("Weather222")
         self.setStyleSheet("background-color: gray;color:black;")
@@ -25,3 +29,17 @@ class NewDelhiWeather(QWidget):
 
     def get_input_data(self) -> str:
         return self.input_field.text()
+
+    def set_weather_data(self, figure: Figure):
+        if self._canvas:
+            self.layout.removeWidget(self._canvas)
+            # self._canvas.delete()
+            self._canvas = None
+
+        self._canvas = NewDelhiWeatherCanvas(self, figure)
+        toolbar = NavigationToolbar(self._canvas, self)
+        self.layout.addWidget(toolbar)
+        self.layout.addWidget(self._canvas)
+
+        """self.canvas.update_plot_from_figure(figure)
+        self.canvas.draw()"""

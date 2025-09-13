@@ -19,7 +19,7 @@ class NewDelhiWeather(QObject):
         self._model = model
 
         self._forecaster_model = Prophet()
-        self._forecast_data = self._model.get_data().rename(columns={"date": "ds", "meantemp": "y"})
+        self._forecast_data_frame = self._model.get_data().rename(columns={"date": "ds", "meantemp": "y"})
 
     """
     Generates a weather forecast prediction.
@@ -28,8 +28,8 @@ class NewDelhiWeather(QObject):
         A matplotlib figure
     """
     def generate_prediction(self)->Figure:
-        # print(self.forecast_data)
-        self._forecaster_model.fit(self._forecast_data)
+        # print(self._forecast_data_frame)
+        self._forecaster_model.fit(self._forecast_data_frame)
         forecasts = self._forecaster_model.make_future_dataframe(periods=self._forecast_periods)
         predictions = self._forecaster_model.predict(forecasts)
 

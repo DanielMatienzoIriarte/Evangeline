@@ -1,75 +1,51 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit
-from PyQt6.QtCore import QObject, pyqtSignal
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
 
-# Model
-class DataModel(QObject):
-    data_changed = pyqtSignal(str)
+from prophet import Prophet
+from prophet.plot import plot_plotly, plot_components_plotly
 
-    def __init__(self, initial_data: str = ""):
-        super().__init__()
-        self._data: str = initial_data
 
-    @property
-    def data(self) -> str:
-        return self._data
+data = pd.read_csv("DailyDelhiClimateTrain.csv")
+print(data.head())
+print(data.describe())
+print(data.info())
+"""
+figure = px.line(data, x="date", y="meantemp", title='Mean Temperature in Delhi Over the Years')
+figure.show()
 
-    @data.setter
-    def data(self, value: str):
-        if self._data != value:
-            self._data = value
-            self.data_changed.emit(self._data)
+figure = px.line(data, x="date", y="humidity", title='Humidity in Delhi Over the Years')
+figure.show()
 
-# View
-class DataView(QWidget):
-    def __init__(self, parent: QWidget = None):
-        super().__init__(parent)
-        self.layout = QVBoxLayout()
-        self.label = QLabel("Current Data: ")
-        self.input_field = QLineEdit()
-        self.update_button = QPushButton("Update Data")
+figure = px.line(data, x="date", y="wind_speed", title='Wind Speed in Delhi Over the Years')
+figure.show()
 
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.input_field)
-        self.layout.addWidget(self.update_button)
-        self.setLayout(self.layout)
+figure = px.scatter(data_frame = data, x="humidity", y="meantemp", size="meantemp", trendline="ols", title = "Relationship Between Temperature and Humidity")
+figure.show()
 
-    def set_data_display(self, data: str):
-        self.label.setText(f"Current Data: {data}")
+data["date"] = pd.to_datetime(data["date"], format = '%Y-%m-%d')
+data['year'] = data['date'].dt.year
+data["month"] = data["date"].dt.month
+print(data.head())
 
-    def get_input_data(self) -> str:
-        return self.input_field.text()
+plt.style.use('fivethirtyeight')
+plt.figure(figsize=(15, 10))
+plt.title("Temperature Change in Delhi Over the Years")
+sns.lineplot(data = data, x='month', y='meantemp', hue='year')
+plt.show()
 
-# Controller
-class DataController(QObject):
-    def __init__(self, model: DataModel, view: DataView):
-        super().__init__()
-        self._model: DataModel = model
-        self._view: DataView = view
+forecast_data = data.rename(columns = {"date": "ds",
+                                       "meantemp": "y"})
+print(forecast_data)
+"""
 
-        # Connect view signals to controller slots
-        self._view.update_button.clicked.connect(self.update_model_from_view)
 
-        # Connect model signals to view slots
-        self._model.data_changed.connect(self._view.set_data_display)
-
-        # Initialize view with current model data
-        self._view.set_data_display(self._model.data)
-
-    def update_model_from_view(self):
-        new_data: str = self._view.get_input_data()
-        self._model.data = new_data
-
-# Main Application
-class App(QApplication):
-    def __init__(self, argv: list[str]):
-        super().__init__(argv)
-        self.model = DataModel("Initial Value")
-        self.view = DataView()
-        self.controller = DataController(self.model, self.view)
-        self.view.setWindowTitle("PyQt6 MVC Example")
-        self.view.show()
-
-if __name__ == "__main__":
-    app = App(sys.argv)
-    sys.exit(app.exec())
+forecast_data = data.rename(columns = {"date": "ds", "meantemp": "y"})
+model = Prophet()
+model.fit(forecast_data)
+forecasts = model.make_future_dataframe(periods=365)
+predictions = model.predict(forecasts)
+figure = plot_plotly(model, predictions)
+figure.show()

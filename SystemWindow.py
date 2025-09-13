@@ -7,7 +7,7 @@ from PyQt6.QtCore import QSize, Qt, QRect, QMetaObject, QCoreApplication
 
 from new_delhi_weather.new_delhi_weather_app import NewDelhiWeather
 from new_delhi_weather.new_delhi_weather_model import NewDelhiWeather as Model
-from new_delhi_weather.new_delhi_weather_controller import NewDelhiWeather as ViewModel
+from new_delhi_weather.new_delhi_weather_controller import NewDelhiWeather as Controller
 from new_delhi_weather.new_delhi_weather_view import NewDelhiWeather as View
 
 
@@ -79,11 +79,12 @@ class SystemWindow(QMainWindow):
 
         self._model = Model("Initial Value")
         self.new_delhi_weather = View()
-        self._viewmodel = ViewModel(self._model, self.new_delhi_weather)
+        self._controller = Controller(self._model, self.new_delhi_weather)
 
     def setupNewDelhiWeatherModule(self):
         if self.new_delhi_weather is None:
             self.new_delhi_weather = View()
+        self.setCentralWidget(self.new_delhi_weather)
 
         self.new_delhi_weather.show()
 
