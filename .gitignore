@@ -209,3 +209,6 @@ __marimo__/
 #IDE
 .vscode
 .idea
+
+#Python cache
+**/__pycache__/
