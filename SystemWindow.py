@@ -5,22 +5,30 @@ from PyQt6.QtGui import QIcon, QPixmap, QAction
 from PyQt6.QtWidgets import QLabel, QMenu, QMenuBar, QWidget, QStatusBar
 from PyQt6.QtCore import QSize, Qt, QRect, QMetaObject, QCoreApplication
 
-from new_delhi_weather.new_delhi_weather_app import NewDelhiWeather
 from new_delhi_weather.new_delhi_weather_model import NewDelhiWeather as Model
 from new_delhi_weather.new_delhi_weather_controller import NewDelhiWeather as Controller
 from new_delhi_weather.new_delhi_weather_view import NewDelhiWeather as View
+from f1_prediction.f1_prediction_controller import F1PredictionController
+from f1_prediction.f1_prediction_view import F1PredictionView
+from f1_prediction.f1_prediction_model import F1PredictionModel
 
 
 class SystemWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__()
 
-        self.new_delhi_weather = None
-
         self.setObjectName("SystemWindow")
         self.setWindowTitle("Maneki Neko")
         self.setWindowIcon(QIcon(""))
         self.showMaximized()
+
+        self._weather_prediction_model = None
+        self._new_delhi_weather = None
+        self._weather_prediction_controller = None
+
+        self._f1_prediction_model = None
+        self._f1_prediction = None
+        self._f1_prediction_controller = None
 
         #BG logo
         logo_pixmap = QPixmap("Resources/Images/taxseguro.png")
@@ -48,9 +56,10 @@ class SystemWindow(QMainWindow):
         self.action_weather_new_delhi.setObjectName("action_weather_new_delhi")
         self.action_weather_new_delhi.setText("Climate New delhi")
         self.action_weather_new_delhi.triggered.connect(self.setupNewDelhiWeatherModule)
-        self.actionOpen = QAction(self)
-        self.actionOpen.setObjectName("actionOpen")
-        self.actionOpen.setText("Open")
+        self.action_f1_prediction = QAction(self)
+        self.action_f1_prediction.setObjectName("f1_prediction")
+        self.action_f1_prediction.setText("F1 Prediction")
+        self.action_f1_prediction.triggered.connect(self.setup_f1_prediction)
         self.actionSave = QAction(self)
         self.actionSave.setObjectName("actionSave")
         self.actionSave.setText("Save")
@@ -67,7 +76,7 @@ class SystemWindow(QMainWindow):
         self.menubar.addAction(self.menu_item_project.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menu_item_project.addAction(self.action_weather_new_delhi)
-        self.menu_item_project.addAction(self.actionOpen)
+        self.menu_item_project.addAction(self.action_f1_prediction)
         self.menu_item_project.addAction(self.actionSave)
         self.menu_item_project.addSeparator()
         self.menu_item_project.addAction(self.actionExit)
@@ -77,16 +86,32 @@ class SystemWindow(QMainWindow):
 
         QMetaObject.connectSlotsByName(self)
 
-        self._model = Model("Initial Value")
-        self.new_delhi_weather = View()
-        self._controller = Controller(self._model, self.new_delhi_weather)
+        self.orchestrate_weather_structure()
+        self.orchestrate_f1_prediction_structure()
 
-    def setupNewDelhiWeatherModule(self):
-        if self.new_delhi_weather is None:
-            self.new_delhi_weather = View()
-        self.setCentralWidget(self.new_delhi_weather)
+    def orchestrate_weather_structure(self) -> None:
+        self._weather_prediction_model = Model("Initial Value")
+        self._new_delhi_weather = View()
+        self._weather_prediction_controller = Controller(self._weather_prediction_model, self._new_delhi_weather)
 
-        self.new_delhi_weather.show()
+    def orchestrate_f1_prediction_structure(self) -> None:
+        self._f1_prediction_model = F1PredictionModel()
+        self._f1_prediction = F1PredictionView()
+        self._f1_prediction_controller = F1PredictionController(self._f1_prediction_model, self._f1_prediction)
+
+    def setupNewDelhiWeatherModule(self) -> None:
+        if self._new_delhi_weather is None:
+            self._new_delhi_weather = View()
+        self.setCentralWidget(self._new_delhi_weather)
+
+        self._new_delhi_weather.show()
+
+    def setup_f1_prediction(self) -> None:
+        if self._f1_prediction is None:
+            self._f1_prediction = F1PredictionView()
+        self.setCentralWidget(self._f1_prediction)
+
+        self._f1_prediction.show()
 
 
 if __name__ == '__main__':

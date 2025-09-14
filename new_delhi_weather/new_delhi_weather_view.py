@@ -17,7 +17,7 @@ class NewDelhiWeather(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.label = QLabel("Current Data: ")
         self.input_field = QLineEdit()
-        self.update_button = QPushButton("Update Data")
+        self.update_button = QPushButton("Update Weather Data")
 
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.input_field)
@@ -31,10 +31,11 @@ class NewDelhiWeather(QWidget):
         return self.input_field.text()
 
     def set_weather_data(self, figure: Figure):
-        if self._canvas:
+        # research update with new data
+        """if self._canvas:
             self.layout.removeWidget(self._canvas)
             # self._canvas.delete()
-            self._canvas = None
+            self._canvas = None"""
 
         self._canvas = NewDelhiWeatherCanvas(self, figure)
         toolbar = NavigationToolbar(self._canvas, self)
